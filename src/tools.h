@@ -215,69 +215,42 @@ class MTRnd {
     const static uint M = 397;
     const static uint K = 0x9908B0DFU;
 
-    uint hiBit(uint u) { return u & 0x80000000U; }
-    uint loBit(uint u) { return u & 0x00000001U; }
-    uint loBits(uint u) { return u & 0x7FFFFFFFU; }
+    inline uint hiBit(uint u) { return u & 0x80000000U; }
+    inline uint loBit(uint u) { return u & 0x00000001U; }
+    inline uint loBits(uint u) { return u & 0x7FFFFFFFU; }
 
-    uint mixBits(uint u, uint v) { return hiBit(u) | loBits(v); }
+    inline uint mixBits(uint u, uint v) { return hiBit(u) | loBits(v); }
 
     uint state[N + 1];
     uint *next;
     int left;
 
-    public:
+public:
     MTRnd() : left(-1) {}
 
-    void SeedMT(uint seed) {
-        uint x = (seed | 1U) & 0xFFFFFFFFU, *s = state;
-        int j;
-        for (left = 0, *s++ = x, j = N; --j; *s++ = (x *= 69069U) & 0xFFFFFFFFU)
-            ;
-    }
+	void SeedMT(uint seed);
 
-    uint ReloadMT() {
-        uint *p0 = state, *p2 = state + 2, *pM = state + M, s0, s1;
-        int j;
-        if (left < -1) SeedMT(4357U);
-        left = N - 1, next = state + 1;
-        for (s0 = state[0], s1 = state[1], j = N - M + 1; --j; s0 = s1, s1 = *p2++)
-            *p0++ = *pM++ ^ (mixBits(s0, s1) >> 1) ^ (loBit(s1) ? K : 0U);
-        for (pM = state, j = M; --j; s0 = s1, s1 = *p2++)
-            *p0++ = *pM++ ^ (mixBits(s0, s1) >> 1) ^ (loBit(s1) ? K : 0U);
-        s1 = state[0], *p0 = *pM ^ (mixBits(s0, s1) >> 1) ^ (loBit(s1) ? K : 0U);
-        s1 ^= (s1 >> 11);
-        s1 ^= (s1 << 7) & 0x9D2C5680U;
-        s1 ^= (s1 << 15) & 0xEFC60000U;
-        return (s1 ^ (s1 >> 18));
-    }
+	uint ReloadMT();
 
-    uint RandomMT() {
-        uint y;
-        if (--left < 0) return (ReloadMT());
-        y = *next++;
-        y ^= (y >> 11);
-        y ^= (y << 7) & 0x9D2C5680U;
-        y ^= (y << 15) & 0xEFC60000U;
-        return (y ^ (y >> 18));
-    }
+	uint RandomMT();
 
-    int operator()(int max) { return RandomMT() % max; }
+    inline int operator()(int max) { return RandomMT() % max; }
 };
 
 // for use with vc++ crtdbg
 
-#ifdef _DEBUG
-inline void *__cdecl operator new(size_t n, const char *fn, int l) {
-    return ::operator new(n, 1, fn, l);
-}
-inline void *__cdecl operator new[](size_t n, const char *fn, int l) {
-    return ::operator new[](n, 1, fn, l);
-}
-inline void __cdecl operator delete(void *p, const char *fn, int l) {
-    ::operator delete(p, 1, fn, l);
-}
-inline void __cdecl operator delete[](void *p, const char *fn, int l) {
-    ::operator delete[](p, 1, fn, l);
-}
-#define new new (__FILE__, __LINE__)
-#endif
+//#ifdef _DEBUG
+//inline void *__cdecl operator new(size_t n, const char *fn, int l) {
+//    return ::operator new(n, 1, fn, l);
+//}
+//inline void *__cdecl operator new[](size_t n, const char *fn, int l) {
+//    return ::operator new[](n, 1, fn, l);
+//}
+//inline void __cdecl operator delete(void *p, const char *fn, int l) {
+//    ::operator delete(p, 1, fn, l);
+//}
+//inline void __cdecl operator delete[](void *p, const char *fn, int l) {
+//    ::operator delete[](p, 1, fn, l);
+//}
+//#define new new (__FILE__, __LINE__)
+//#endif

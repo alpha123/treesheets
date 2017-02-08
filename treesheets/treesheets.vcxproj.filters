@@ -18,6 +18,40 @@
     <ClCompile Include="..\src\main.cpp">
       <Filter>std</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\document.cpp">
+      <Filter>treesheets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\system.cpp">
+      <Filter>treesheets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\evaluator.cpp">
+      <Filter>treesheets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\tools.cpp">
+      <Filter>std</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\grid.cpp">
+      <Filter>treesheets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\text.cpp">
+      <Filter>treesheets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cell.cpp">
+      <Filter>treesheets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\myapp.cpp">
+      <Filter>wxwidgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\selection.cpp">
+      <Filter>treesheets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\myframe.cpp">
+      <Filter>wxwidgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\mywxtools.cpp">
+      <Filter>wxwidgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\mycanvas.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\tools.h">
@@ -62,6 +96,9 @@
     </ClInclude>
     <ClInclude Include="..\src\common.h">
       <Filter>std</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\declarations.h">
+      <Filter>treesheets</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
