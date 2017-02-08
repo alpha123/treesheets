@@ -1,5 +1,5 @@
 
-#include "stdafx.h"
+#include "common.h"
 
 #ifndef __WXMSW__
 #define SIMPLERENDER

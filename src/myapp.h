@@ -1,21 +1,11 @@
 
-struct IPCServer : wxServer {
-    wxConnectionBase *OnAcceptConnection(const wxString &topic) {
-        sys->frame->DeIconize();
-        if (topic.Len() && topic != L"*") sys->Open(topic);
-        return new wxConnection();
-    }
-};
-
 struct MyApp : wxApp {
     MyFrame *frame;
-    wxSingleInstanceChecker *checker;
-    IPCServer *serv;
     wxString filename;
     bool initateventloop;
     // wxLocale locale;
 
-    MyApp() : checker(NULL), frame(NULL), serv(NULL), initateventloop(false) {}
+    MyApp() : frame(NULL), initateventloop(false) {}
     bool OnInit() {
         #if wxUSE_UNICODE == 0
         #error "must use unicode version of wx libs to ensure data integrity of .cts files"
@@ -45,22 +35,9 @@ struct MyApp : wxApp {
             }
         }
 
-        const wxString name =
-            wxString::Format(L".treesheets-single-instance-check-%s", wxGetUserId().c_str());
-        checker = new wxSingleInstanceChecker(name);
-        if (checker->IsAnotherRunning()) {
-            wxClient client;
-            client.MakeConnection(L"localhost", L"4242",
-                                  filename.Len() ? filename.wc_str() : L"*");  // fire and forget
-            return false;
-        }
-
         sys = new System(portable);
         frame = new MyFrame(argv[0], this);
         SetTopWindow(frame);
-
-        serv = new IPCServer();
-        serv->Create(L"4242");
 
         return true;
     }
@@ -76,9 +53,7 @@ struct MyApp : wxApp {
     }
 
     int OnExit() {
-        DELETEP(serv);
         DELETEP(sys);
-        DELETEP(checker);
         return 0;
     }
 
