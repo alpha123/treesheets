@@ -10,3 +10,6 @@ osx/TreeSheets/TreeSheets.xcodeproj/project.xcworkspace/xcuserdata/
 *.ilk
 *.pdb
 *.bak
+*.db
+*.opendb
+*.ipch

@@ -73,7 +73,4 @@
     </None>
     <None Include="icon1.ico" />
   </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="boar.rc" />
-  </ItemGroup>
 </Project>
