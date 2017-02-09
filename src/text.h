@@ -4,15 +4,13 @@
 
 namespace treesheets {
 
+#pragma pack(push,1)
 	struct Text {
-		Cell *cell;
-
 		wxString t;
-		int relsize, stylebits, extent;
-
-		Image *image;
-
 		wxDateTime lastedit;
+		Cell *cell;
+		Image *image;
+		int relsize, stylebits, extent;
 		bool filtered;
 
 		Text();
@@ -68,5 +66,6 @@ namespace treesheets {
 
 		Cell *Graph();
 	};
+#pragma pack(pop)
 
 }

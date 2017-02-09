@@ -27,17 +27,18 @@ namespace treesheets {
 		They are mutable structures containing a text and grid object. Along with
 		formatting information.
 	*/
+#pragma pack(push,1)
 	class Cell {
 	public:
-		Cell *parent;
-		int sx, sy, ox, oy, minx, miny, ycenteroff, txs, tys;
-		int celltype;
 		Text text;
+		Cell *parent;
 		Grid *grid;
+		int sx, sy, ox, oy, minx, miny, ycenteroff, txs, tys;
 		uint cellcolor, textcolor, actualcellcolor;
+		int celltype;
+		wxUint8 drawstyle;
 		bool tiny;
 		bool verticaltextandgrid;
-		wxUint8 drawstyle;
 
 		Cell(Cell *_p = NULL, Cell const *_clonefrom = NULL, int _ct = CT_DATA, Grid *_g = NULL);
 		~Cell();
@@ -114,5 +115,6 @@ namespace treesheets {
 
 		void CollectCells(Vector<Cell *> &itercells, bool recurse = true);
 	};
+#pragma pack(pop)
 
 }
