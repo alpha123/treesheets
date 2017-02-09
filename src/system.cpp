@@ -226,7 +226,7 @@ namespace treesheets {
 						for (;;) {
 							wxString s = dis.ReadString();
 							if (!s.Len()) break;
-							doc->tags[s] = true;
+							doc->tags.insert(s);
 						}
 					}
 
@@ -264,8 +264,8 @@ namespace treesheets {
 			doc->lastmodificationtime = wxFileName(filename).GetModificationTime();
 			const wxString &d =
 				wxFileName(filename).GetPath(wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR);
-			if (watchedpaths.find(d) == watchedpaths.end()) {
-				watchedpaths[d] = true;
+			if (watchedpaths.count(d) == 0) {
+				watchedpaths.insert(d);
 				frame->watcher->Add(wxFileName(d), wxFSW_EVENT_ALL);
 			}
 		}

@@ -96,7 +96,7 @@ namespace treesheets {
 	}
 
 	Cell *Evaluator::Lookup(wxString &name) {
-		wxHashMapCell::iterator lookup = vars.find(name);
+		auto lookup = vars.find(name);
 		return (lookup != vars.end()) ? lookup->second->Clone(NULL) : NULL;
 	}
 

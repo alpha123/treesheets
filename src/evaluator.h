@@ -1,6 +1,8 @@
 #pragma once
 #include "common.h"
 
+#include <unordered_map>
+
 #include "cell.h"
 #include "grid.h"
 #include "text.h"
@@ -22,16 +24,13 @@ namespace treesheets {
 		virtual double runnn(double a, double b) { return 0; }
 	};
 
-	WX_DECLARE_STRING_HASH_MAP(Operation *, wxHashMapOperation);
-	WX_DECLARE_STRING_HASH_MAP(Cell *, wxHashMapCell);
-
 	/*
 		Provides running evaluation of a grid.
 	*/
 	class Evaluator {
 	public:
-		wxHashMapOperation ops;
-		wxHashMapCell vars;
+		std::unordered_map<wxString, Operation *> ops;
+		std::unordered_map<wxString, Cell *> vars;
 		bool vert;
 
 		~Evaluator();

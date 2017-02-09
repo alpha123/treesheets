@@ -1,6 +1,8 @@
 #pragma once
 #include "common.h"
 
+#include <set>
+
 #include "cell.h"
 #include "selection.h"
 #include "system.h"
@@ -74,7 +76,7 @@ public:
 
     bool searchfilter;
 
-    wxHashMapBool tags;
+    std::set<wxString> tags;
 
     int editfilter;
 

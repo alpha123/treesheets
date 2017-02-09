@@ -125,10 +125,7 @@ namespace treesheets {
 			if (!zos.IsOk()) return "zlib error while writing file";
 			wxDataOutputStream dos(zos);
 			rootgrid->Save(dos);
-			wxHashMapBool::iterator tagit;
-			for (tagit = tags.begin(); tagit != tags.end(); ++tagit) {
-				dos.WriteString(tagit->first);
-			}
+			for (auto tag : tags) { dos.WriteString(tag); }
 			dos.WriteString(wxEmptyString);
 		}
 		lastmodsinceautosave = 0;
@@ -1445,7 +1442,7 @@ namespace treesheets {
 
 		case A_TAGADD:
 			if (!c->text.t.Len()) return "empty strings cannot be tags";
-			tags[c->text.t] = true;
+			tags.insert(c->text.t);	
 			Refresh();
 			return NULL;
 
@@ -1745,24 +1742,24 @@ namespace treesheets {
 	}
 
 	void Document::RecreateTagMenu(wxMenu &menu) {
-		wxHashMapBool::iterator tagit;
 		int i = A_TAGSET;
-		for (tagit = tags.begin(); tagit != tags.end(); ++tagit) { menu.Append(i++, tagit->first); }
+		for (auto tag : tags) { menu.Append(i++, tag); }
 	}
 
 	const char *Document::TagSet(int tagno) {
-		wxHashMapBool::iterator tagit;
 		int i = 0;
-		for (tagit = tags.begin(); tagit != tags.end(); ++tagit)
+		for (auto tag : tags)
+		{
 			if (i++ == tagno) {
 				Cell *c = selected.GetCell();
 				if (!c) return OneCell();
 				c->AddUndo(this);
 				c->text.Clear(this, selected);
-				c->text.Insert(this, tagit->first, selected);
+				c->text.Insert(this, tag, selected);
 				Refresh();
 				return NULL;
 			}
+		}
 		ASSERT(0);
 		return NULL;
 	}

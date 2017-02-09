@@ -1,6 +1,8 @@
 #pragma once
 #include "common.h"
 
+#include <unordered_set>
+
 #include "cell.h"
 #include "document.h"
 #include "evaluator.h"
@@ -64,7 +66,7 @@ namespace treesheets {
 		int sortcolumn, sortxs, sortdescending;
 
 		bool fastrender;
-		wxHashMapBool watchedpaths;
+		std::unordered_set<wxString> watchedpaths;
 
 		bool insidefiledialog;
 

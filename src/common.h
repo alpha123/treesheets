@@ -42,8 +42,6 @@
 #include <wx/display.h>
 #include <wx/fswatcher.h>
 
-WX_DECLARE_STRING_HASH_MAP(bool, wxHashMapBool);
-
 #include "tools.h"
 
 #ifdef WIN32
