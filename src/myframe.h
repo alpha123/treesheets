@@ -34,7 +34,7 @@ namespace treesheets {
 
 		MenuString menustrings;
 
-		void MyAppend(wxMenu *menu, int tag, const wxString &contents, const wchar_t *help = L"");
+		void MyAppend(wxMenu *menu, int tag, const wxString &contents, const wxString &help = L"");
 
 		MyFrame(wxString exename, wxApp *_app);
 

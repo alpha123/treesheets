@@ -10,6 +10,7 @@
 #include <wx/wfstream.h>
 #include <wx/datstrm.h>
 #include <wx/txtstrm.h>
+#include <wx/intl.h>
 #include <wx/dcbuffer.h>
 #include <wx/clipbrd.h>
 #include <wx/dnd.h>
@@ -26,6 +27,7 @@
 #include <wx/fontdlg.h>
 #include <wx/colordlg.h>
 #include <wx/filename.h>
+#include <wx/filehistory.h>
 #include <wx/xml/xml.h>
 #include <wx/docview.h>
 #include <wx/print.h>
