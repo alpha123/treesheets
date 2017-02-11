@@ -89,7 +89,7 @@ namespace treesheets {
 	}
 
 	const char *Document::SaveDB(bool *success, bool istempfile, int page) {
-		if (filename.empty()) return "save cancelled";
+		if (filename.empty()) return _("save cancelled");
 
 		{  // limit destructors
 			wxBusyCursor wait;
@@ -100,9 +100,9 @@ namespace treesheets {
 			wxFFileOutputStream fos(sfn);
 			if (!fos.IsOk()) {
 				if (!istempfile)
-					wxMessageBox(L"Error writing TreeSheets file! (try saving under new filename)",
+					wxMessageBox(_(L"Error writing TreeSheets file! (try saving under new filename)"),
 						sfn.wx_str(), wxOK, g_sys->frame);
-				return "error writing to file";
+				return _("error writing to file");
 			}
 			wxDataOutputStream sos(fos);
 			fos.Write("TSFF", 4);
@@ -122,7 +122,7 @@ namespace treesheets {
 			}
 			fos.Write("D", 1);
 			wxZlibOutputStream zos(fos, 9);
-			if (!zos.IsOk()) return "zlib error while writing file";
+			if (!zos.IsOk()) return _("zlib error while writing file");
 			wxDataOutputStream dos(zos);
 			rootgrid->Save(dos);
 			for (auto tag : tags) { dos.WriteString(tag); }
@@ -140,7 +140,7 @@ namespace treesheets {
 		if (g_sys->autohtmlexport) { ExportFile(g_sys->ExtName(filename, L".html"), A_EXPHTMLT); }
 		UpdateFileName(page);
 		if (success) *success = true;
-		return "file saved succesfully";
+		return _("file saved succesfully");
 	}
 
 	void Document::DrawSelect(wxDC &dc, Selection &s, bool refreshinstead, bool cursoronly) {
@@ -333,10 +333,10 @@ namespace treesheets {
 		DrawSelectMove(dc, selected, true, false);
 	}
 
-	const char *Document::NoSel() { return "this operation requires a selection"; }
-	const char *Document::OneCell() { return "this operation works on a single selected cell only"; }
-	const char *Document::NoThin() { return "this operation doesn't work on thin selections"; }
-	const char *Document::NoGrid() { return "this operation requires a cell that contains a grid"; }
+	const char *Document::NoSel() { return _("this operation requires a selection"); }
+	const char *Document::OneCell() { return _("this operation works on a single selected cell only"); }
+	const char *Document::NoThin() { return _("this operation doesn't work on thin selections"); }
+	const char *Document::NoGrid() { return _("this operation requires a cell that contains a grid"); }
 
 	const char *Document::Wheel(wxDC &dc, int dir, bool alt, bool ctrl, bool shift, bool hierarchical) {
 		if (!dir) return NULL;
@@ -351,9 +351,9 @@ namespace treesheets {
 				selected.g->cell->ResetChildren();
 				g_sys->UpdateStatus(selected);
 				Refresh();
-				return dir > 0 ? "column width increased" : "column width decreased";
+				return dir > 0 ? _("column width increased") : _("column width decreased");
 			}
-			return "nothing to resize";
+			return _("nothing to resize");
 		}
 		else if (shift) {
 			if (!selected.g) return NoSel();
@@ -362,13 +362,13 @@ namespace treesheets {
 			selected.g->RelSize(-dir, selected, pathscalebias);
 			g_sys->UpdateStatus(selected);
 			Refresh();
-			return dir > 0 ? "text size increased" : "text size decreased";
+			return dir > 0 ? _("text size increased") : _("text size decreased");
 		}
 		else if (ctrl) {
 			int steps = abs(dir);
 			dir = sign(dir);
 			loop(i, steps) Zoom(dir, dc);
-			return dir > 0 ? "zoomed in" : "zoomed out";
+			return dir > 0 ? _("zoomed in") : _("zoomed out");
 		}
 		else {
 			ASSERT(0);
@@ -587,7 +587,7 @@ namespace treesheets {
 	const char *Document::Export(const wxChar *fmt, const wxChar *pat, const wxChar *msg, int k) {
 		wxString fn = ::wxFileSelector(msg, L"", L"", fmt, pat,
 			wxFD_SAVE | wxFD_OVERWRITE_PROMPT | wxFD_CHANGE_DIR);
-		if (fn.empty()) return "export cancelled";
+		if (fn.empty()) return _("export cancelled");
 		return ExportFile(fn, k);
 	}
 
@@ -596,8 +596,8 @@ namespace treesheets {
 			int maxdepth = 0, leaves = 0;
 			curdrawroot->MaxDepthLeaves(0, maxdepth, leaves);
 			if (maxdepth > 1)
-				return "cannot export grid that is not flat (zoom the view to the desired grid, "
-				"and/or use Flatten)";
+				return _("cannot export grid that is not flat (zoom the view to the desired grid, "
+				"and/or use Flatten)");
 		}
 		if (k == A_EXPIMAGE) {
 			maxx = layoutxs;
@@ -608,13 +608,13 @@ namespace treesheets {
 			DrawRectangle(mdc, Background(), 0, 0, maxx, maxy);
 			Render(mdc);
 			Refresh();
-			if (!bm.SaveFile(fn, wxBITMAP_TYPE_PNG)) return "error writing PNG file!";
+			if (!bm.SaveFile(fn, wxBITMAP_TYPE_PNG)) return _("error writing PNG file!");
 		}
 		else {
 			wxFFileOutputStream fos(fn, L"w+b");
 			if (!fos.IsOk()) {
-				wxMessageBox(L"Error exporting file!", fn.wx_str(), wxOK, g_sys->frame);
-				return "error writing to file";
+				wxMessageBox(_(L"Error exporting file!"), fn.wx_str(), wxOK, g_sys->frame);
+				return _("error writing to file");
 			}
 			wxTextOutputStream dos(fos);
 			wxString content = curdrawroot->ToText(0, Selection(), k, this);
@@ -633,9 +633,8 @@ namespace treesheets {
 			case A_EXPHTMLO:
 				dos.WriteString(
 					L"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 "
-					L"Final//EN\">\n<html>\n<head>\n<title>export of "
-					L"TreeSheets file ");
-				dos.WriteString(filename);
+					L"Final//EN\">\n<html>\n<head>\n<title>");
+				dos.WriteString(wxString::Format(_(L"export of TreeSheets file %s"), filename));
 				dos.WriteString(
 					L"</title>\n<meta http-equiv=\"Content-Type\" content=\"text/html; "
 					L"charset=UTF-8\" "
@@ -647,15 +646,15 @@ namespace treesheets {
 			case A_EXPTEXT: dos.WriteString(content); break;
 			}
 		}
-		return "file exported successfully";
+		return _("file exported successfully");
 	}
 
 	const char *Document::Save(bool saveas, bool *success) {
 		if (!saveas && !filename.empty()) { return SaveDB(success); }
 		wxString fn =
-			::wxFileSelector(L"Choose TreeSheets file to save:", L"", L"", L"cts", L"*.cts",
+			::wxFileSelector(_(L"Choose TreeSheets file to save:"), L"", L"", L"cts", L"*.cts",
 				wxFD_SAVE | wxFD_OVERWRITE_PROMPT | wxFD_CHANGE_DIR);
-		if (fn.empty()) return "save cancelled";  // avoid name being set to ""
+		if (fn.empty()) return _("save cancelled");  // avoid name being set to ""
 		ChangeFileName(fn);
 		return SaveDB(success);
 	}
@@ -746,7 +745,7 @@ namespace treesheets {
 			g_sys->ev.Eval(rootgrid);
 			rootgrid->ResetChildren();
 			ClearSelectionRefresh();
-			return "evaluation finished";
+			return _("evaluation finished");
 
 		case A_UNDO:
 			if (undolist.size()) {
@@ -754,7 +753,7 @@ namespace treesheets {
 				return NULL;
 			}
 			else {
-				return "nothing more to undo";
+				return _("nothing more to undo");
 			}
 
 		case A_REDO:
@@ -763,18 +762,18 @@ namespace treesheets {
 				return NULL;
 			}
 			else {
-				return "nothing more to redo";
+				return _("nothing more to redo");
 			}
 
 		case A_SAVE: return Save(false);
 		case A_SAVEAS: return Save(true);
 
-		case A_EXPXML: return Export(L"xml", L"*.xml", L"Choose XML file to write", k);
+		case A_EXPXML: return Export(L"xml", L"*.xml", _(L"Choose XML file to write"), k);
 		case A_EXPHTMLT:
-		case A_EXPHTMLO: return Export(L"html", L"*.html", L"Choose HTML file to write", k);
-		case A_EXPTEXT: return Export(L"txt", L"*.txt", L"Choose Text file to write", k);
-		case A_EXPIMAGE: return Export(L"png", L"*.png", L"Choose PNG file to write", k);
-		case A_EXPCSV: return Export(L"csv", L"*.csv", L"Choose CSV file to write", k);
+		case A_EXPHTMLO: return Export(L"html", L"*.html", _(L"Choose HTML file to write"), k);
+		case A_EXPTEXT: return Export(L"txt", L"*.txt", _(L"Choose Text file to write"), k);
+		case A_EXPIMAGE: return Export(L"png", L"*.png", _(L"Choose PNG file to write"), k);
+		case A_EXPCSV: return Export(L"csv", L"*.csv", _(L"Choose CSV file to write"), k);
 
 		case A_IMPXML:
 		case A_IMPXMLA:
@@ -785,7 +784,7 @@ namespace treesheets {
 
 		case A_OPEN: {
 			wxString fn =
-				::wxFileSelector(L"Please select a TreeSheets file to load:", L"", L"", L"cts",
+				::wxFileSelector(_(L"Please select a TreeSheets file to load:"), L"", L"", L"cts",
 					L"*.cts", wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_CHANGE_DIR);
 			return g_sys->Open(fn);
 		}
@@ -807,9 +806,9 @@ namespace treesheets {
 		}
 
 		case A_NEW: {
-			int size = ::wxGetNumberFromUser(L"What size grid would you like to start with?",
+			int size = ::wxGetNumberFromUser(_(L"What size grid would you like to start with?"),
 				L"size:", L"New Sheet", 10, 1, 25, g_sys->frame);
-			if (size < 0) return "new file cancelled";
+			if (size < 0) return _("new file cancelled");
 			g_sys->InitDB(size);
 			g_sys->frame->GetCurTab()->doc->Refresh();
 			return NULL;
@@ -819,8 +818,8 @@ namespace treesheets {
 			wxAboutDialogInfo info;
 			info.SetName(L"TreeSheets");
 			info.SetVersion(wxT(PACKAGE_VERSION));
-			info.SetCopyright(L"(C) 2009 Wouter van Oortmerssen");
-			info.SetDescription(L"The Free Form Hierarchical Information Organizer");
+			info.SetCopyright(_(L"(C) 2009 Wouter van Oortmerssen, (C) 2017 Peter Cannici"));
+			info.SetDescription(_(L"The Free Form Hierarchical Information Organizer"));
 			wxAboutBox(info);
 			return NULL;
 		}
@@ -879,8 +878,8 @@ namespace treesheets {
 
 		case A_PRINTSCALE: {
 			printscale = ::wxGetNumberFromUser(
-				L"How many pixels wide should a page be? (0 for auto fit)", L"scale:",
-				L"Set Print Scale", 0, 0, 5000, g_sys->frame);
+				_(L"How many pixels wide should a page be? (0 for auto fit)"), _(L"scale:"),
+				_(L"Set Print Scale"), 0, 0, 5000, g_sys->frame);
 			return NULL;
 		}
 
@@ -888,7 +887,7 @@ namespace treesheets {
 			wxPrintDialogData printDialogData(printData);
 			wxPrintPreview *preview = new wxPrintPreview(
 				new MyPrintout(this), new MyPrintout(this), &printDialogData);
-			wxPreviewFrame *pframe = new wxPreviewFrame(preview, g_sys->frame, L"Print Preview",
+			wxPreviewFrame *pframe = new wxPreviewFrame(preview, g_sys->frame, _(L"Print Preview"),
 				wxPoint(100, 100), wxSize(600, 650));
 			pframe->Centre(wxBOTH);
 			pframe->Initialize();
@@ -944,7 +943,7 @@ namespace treesheets {
 			return NULL;
 
 		case A_REPLACEALL: {
-			if (!g_sys->searchstring.Len()) return "no search";
+			if (!g_sys->searchstring.Len()) return _("no search");
 			rootgrid->AddUndo(this);  // expensive?
 			rootgrid->FindReplaceAll(g_sys->frame->replaces->GetValue());
 			rootgrid->ResetChildren();
@@ -956,9 +955,9 @@ namespace treesheets {
 			scaledviewingmode = !scaledviewingmode;
 			rootgrid->ResetChildren();
 			Refresh();
-			return scaledviewingmode ? "now viewing TreeSheet to fit to the screen exactly, "
-				"press F12 to return to normal"
-				: "1:1 scale restored";
+			return scaledviewingmode ? _("now viewing TreeSheet to fit to the screen exactly, "
+				"press F12 to return to normal")
+				: _("1:1 scale restored");
 
 		case A_FILTER5:
 			editfilter = 5;
@@ -993,22 +992,22 @@ namespace treesheets {
 			for (MyFrame::MenuStringIterator it = ms.begin(); it != ms.end(); ++it)
 				strs.push_back(it->first);
 			wxSingleChoiceDialog choice(
-				g_sys->frame, L"Please pick a menu item to change the key binding for",
-				L"Key binding", strs);
+				g_sys->frame, _(L"Please pick a menu item to change the key binding for"),
+				_(L"Key binding"), strs);
 			if (choice.ShowModal() == wxID_OK) {
 				int sel = choice.GetSelection();
 				wxTextEntryDialog textentry(g_sys->frame,
-					"Please enter the new key binding string",
-					"Key binding", ms[sel].second);
+					_("Please enter the new key binding string"),
+					_("Key binding"), ms[sel].second);
 				if (textentry.ShowModal() == wxID_OK) {
 					wxString key = textentry.GetValue();
 					ms[sel].second = key;
 
 					g_sys->cfg->Write(ms[sel].first, key);
-					return "NOTE: key binding will take effect next run of TreeSheets";
+					return _("NOTE: key binding will take effect next run of TreeSheets");
 				}
 			}
-			return "keybinding cancelled";
+			return _("keybinding cancelled");
 		}
 		}
 
@@ -1063,7 +1062,7 @@ namespace treesheets {
 			if (selected.Thin()) return NoThin();
 
 			if (selected.TextEdit()) {
-				if (selected.cursor == selected.cursorend) return "no text selected";
+				if (selected.cursor == selected.cursorend) return _("no text selected");
 			}
 			else if (k != A_COPYCT)
 				g_sys->cellclipboard = c ? c->Clone(NULL) : selected.g->CloneSel(selected);
@@ -1189,7 +1188,7 @@ namespace treesheets {
 			return NULL;
 
 		case A_PASTESTYLE:
-			if (!g_sys->cellclipboard) return "no style to paste";
+			if (!g_sys->cellclipboard) return _("no style to paste");
 			selected.g->cell->AddUndo(this);
 			selected.g->SetStyles(selected, g_sys->cellclipboard);
 			selected.g->cell->ResetChildren();
@@ -1210,7 +1209,7 @@ namespace treesheets {
 		case A_IMAGE: {
 			if (!(c = selected.ThinExpand(this))) return OneCell();
 			wxString fn =
-				::wxFileSelector(L"Please select an image file:", L"", L"", L"", L"*.*",
+				::wxFileSelector(_(L"Please select an image file:"), L"", L"", L"", L"*.*",
 					wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_CHANGE_DIR);
 			c->AddUndo(this);
 			LoadImageIntoCell(fn, c);
@@ -1231,7 +1230,7 @@ namespace treesheets {
 
 		case A_REPLACEONCE:
 		case A_REPLACEONCEJ: {
-			if (!g_sys->searchstring.Len()) return "no search";
+			if (!g_sys->searchstring.Len()) return _("no search");
 			selected.g->ReplaceStr(this, g_sys->frame->replaces->GetValue(), selected);
 			if (k == A_REPLACEONCEJ) return SearchNext(dc);
 			return NULL;
@@ -1352,8 +1351,8 @@ namespace treesheets {
 			case A_HIFY:
 				if (!ac->grid) return NoGrid();
 				if (!ac->grid->IsTable())
-					return "selected grid is not a table: cells must not already have "
-					"sub-grids";
+					return _("selected grid is not a table: cells must not already have "
+					"sub-grids");
 				ac->AddUndo(this);
 				ac->grid->Hierarchify(this);
 				ac->ResetChildren();
@@ -1386,22 +1385,22 @@ namespace treesheets {
 
 		case A_BROWSE:
 			if (!wxLaunchDefaultBrowser(c->text.ToText(0, selected, A_EXPTEXT)))
-				return "cannot launch browser for this link";
+				return _("cannot launch browser for this link");
 			return NULL;
 
 		case A_BROWSEF: {
 			wxString f = c->text.ToText(0, selected, A_EXPTEXT);
 			wxFileName fn(f);
 			if (fn.IsRelative()) fn.MakeAbsolute(wxFileName(filename).GetPath());
-			if (!wxLaunchDefaultApplication(fn.GetFullPath())) return "cannot find file";
+			if (!wxLaunchDefaultApplication(fn.GetFullPath())) return _("cannot find file");
 			return NULL;
 		}
 
 		case A_IMAGESC: {
-			if (!c->text.image) return "no image in this cell";
+			if (!c->text.image) return _("no image in this cell");
 			long v = wxGetNumberFromUser(
-				L"Please enter the percentage you want the image scaled by:", L"%",
-				L"Image Resize", 50, 5, 200, g_sys->frame);
+				_(L"Please enter the percentage you want the image scaled by:"), _(L"%"),
+				_(L"Image Resize"), 50, 5, 200, g_sys->frame);
 			if (v < 0) return NULL;
 			c->text.image->Scale(v / 100.0f);
 			c->ResetLayout();
@@ -1419,7 +1418,7 @@ namespace treesheets {
 		case A_LINKREV: {
 			bool t1 = false, t2 = false;
 			Cell *link = rootgrid->FindLink(selected, c, NULL, t1, t2, k == A_LINK);
-			if (!link) return "no matching cell found!";
+			if (!link) return _("no matching cell found!");
 			selected = link->parent->grid->FindCell(link);
 			ScrollOrZoom(dc, true);
 			return NULL;
@@ -1429,9 +1428,9 @@ namespace treesheets {
 
 		case A_HSWAP: {
 			Cell *pp = c->parent->parent;
-			if (!pp) return "cannot move this cell up in the hierarchy";
+			if (!pp) return _("cannot move this cell up in the hierarchy");
 			if (pp->grid->xs != 1 && pp->grid->ys != 1)
-				return "can only move this cell into an Nx1 or 1xN grid";
+				return _("can only move this cell into an Nx1 or 1xN grid");
 			pp->AddUndo(this);
 			selected = pp->grid->HierarchySwap(c->text.t);
 			pp->ResetChildren();
@@ -1441,8 +1440,8 @@ namespace treesheets {
 		}
 
 		case A_TAGADD:
-			if (!c->text.t.Len()) return "empty strings cannot be tags";
-			tags.insert(c->text.t);	
+			if (!c->text.t.Len()) return _("empty strings cannot be tags");
+			tags.insert(c->text.t);
 			Refresh();
 			return NULL;
 
@@ -1452,7 +1451,7 @@ namespace treesheets {
 			return NULL;
 		}
 
-		if (!selected.TextEdit()) return "only works in cell text mode";
+		if (!selected.TextEdit()) return _("only works in cell text mode");
 
 		switch (k) {
 		case A_CANCELEDIT:
@@ -1496,16 +1495,16 @@ namespace treesheets {
 			c->text.HomeEnd(selected, false);
 			DrawSelectMove(dc, selected);
 			return NULL;
-		default: return "internal error: unimplemented operation!";
+		default: return _("internal error: unimplemented operation!");
 		}
 	}
 
 	char const *Document::SearchNext(wxDC &dc) {
-		if (!g_sys->searchstring.Len()) return "no search string";
+		if (!g_sys->searchstring.Len()) return _("no search string");
 		bool lastsel = true;
 		Cell *next =
 			rootgrid->FindNextSearchMatch(g_sys->searchstring, NULL, selected.GetCell(), lastsel);
-		if (!next) return "no matches for search";
+		if (!next) return _("no matches for search");
 		selected = next->parent->grid->FindCell(next);
 		sw->SetFocus();
 		ScrollOrZoom(dc, true);
@@ -1600,8 +1599,8 @@ namespace treesheets {
 
 	const char *Document::Sort(bool descending) {
 		if (selected.xs != 1 && selected.ys <= 1)
-			return "can't sort: make a 1xN selection to indicate what column to sort on, and what "
-			"rows to affect";
+			return _("can't sort: make a 1xN selection to indicate what column to sort on, and what "
+			"rows to affect");
 		selected.g->cell->AddUndo(this);
 		selected.g->Sort(selected, descending);
 		Refresh();

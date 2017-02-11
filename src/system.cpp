@@ -139,8 +139,8 @@ namespace treesheets {
 
 			if (::wxFileExists(TmpName(filename))) {
 				if (::wxMessageBox(
-					L"A temporary autosave file exists, would you like to load it instead?",
-					L"Autosave load", wxYES_NO, frame) == wxYES) {
+					_(L"A temporary autosave file exists, would you like to load it instead?"),
+					_(L"Autosave load"), wxYES_NO, frame) == wxYES) {
 					fn = TmpName(filename);
 					loadedfromtmp = true;
 				}
@@ -153,13 +153,13 @@ namespace treesheets {
 		{  // limit destructors
 			wxBusyCursor wait;
 			wxFFileInputStream fis(fn);
-			if (!fis.IsOk()) return "cannot open file";
+			if (!fis.IsOk()) return _("cannot open file");
 
 			char buf[4];
 			fis.Read(buf, 4);
-			if (strncmp(buf, "TSFF", 4)) return "not a TreeSheets file";
+			if (strncmp(buf, "TSFF", 4)) return _("not a TreeSheets file");
 			fis.Read(&versionlastloaded, 1);
-			if (versionlastloaded > TS_VERSION) return "file of newer version";
+			if (versionlastloaded > TS_VERSION) return _("file of newer version");
 
 			fakelasteditonload = wxDateTime::Now().GetValue();
 
@@ -179,13 +179,13 @@ namespace treesheets {
 						// Uhoh.. the decoder failed. Try to save the situation by skipping this
 						// PNG.
 						anyimagesfailed = true;
-						if (beforepng == wxInvalidOffset) return "cannot tell/seek document?";
+						if (beforepng == wxInvalidOffset) return _("cannot tell/seek document?");
 						fis.SeekI(beforepng);
 						// Now try to skip past this PNG
 						uchar header[8];
 						fis.Read(header, 8);
 						uchar expected[] = { 0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n' };
-						if (memcmp(header, expected, 8)) return "corrupt PNG header";
+						if (memcmp(header, expected, 8)) return _("corrupt PNG header");
 						dis.BigEndianOrdered(true);
 						for (;;)  // Skip all chunks.
 						{
@@ -208,11 +208,11 @@ namespace treesheets {
 
 				case 'D': {
 					wxZlibInputStream zis(fis);
-					if (!zis.IsOk()) return "cannot decompress file";
+					if (!zis.IsOk()) return _("cannot decompress file");
 					wxDataInputStream dis(zis);
 					int numcells = 0, textbytes = 0;
 					Cell *root = Cell::LoadWhich(dis, NULL, numcells, textbytes);
-					if (!root) return "file corrupted!";
+					if (!root) return _("file corrupted!");
 
 					doc = NewTabDoc(true);
 					if (loadedfromtmp) {
@@ -230,14 +230,14 @@ namespace treesheets {
 						}
 					}
 
-					doc->sw->Status(wxString::Format(L"loaded %s (%d cells, %d characters)",
+					doc->sw->Status(wxString::Format(_(L"loaded %s (%d cells, %d characters)"),
 						filename.c_str(), numcells, textbytes)
 						.c_str());
 
 					goto done;
 				}
 
-				default: return "corrupt block header";
+				default: return _("corrupt block header");
 				}
 			}
 		}
@@ -300,10 +300,10 @@ namespace treesheets {
 		if (frame->GetStatusBar()) {
 			Cell *c = s.GetCell();
 			if (c && s.xs) {
-				frame->SetStatusText(wxString::Format(L"Size %d", -c->text.relsize), 3);
-				frame->SetStatusText(wxString::Format(L"Width %d", s.g->colwidths[s.x]), 2);
+				frame->SetStatusText(wxString::Format(_(L"Size %d"), -c->text.relsize), 3);
+				frame->SetStatusText(wxString::Format(_(L"Width %d"), s.g->colwidths[s.x]), 2);
 				frame->SetStatusText(
-					wxString::Format(L"Edited %s", c->text.lastedit.FormatDate().c_str()), 1);
+					wxString::Format(_(L"Edited %s"), c->text.lastedit.FormatDate().c_str()), 1);
 			}
 		}
 	}
@@ -315,7 +315,7 @@ namespace treesheets {
 	}
 
 	const char *System::Import(int k) {
-		wxString fn = ::wxFileSelector(L"Please select file to import:", L"", L"", L"", L"*.*",
+		wxString fn = ::wxFileSelector(_(L"Please select file to import:"), L"", L"", L"", L"*.*",
 			wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_CHANGE_DIR);
 		if (!fn.empty()) {
 			wxBusyCursor wait;
