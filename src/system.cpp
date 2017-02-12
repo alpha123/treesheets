@@ -250,9 +250,9 @@ namespace treesheets {
 
 		if (anyimagesfailed)
 			wxMessageBox(
-				L"PNG decode failed on some images in this document\nThey have been replaced by "
-				L"red squares.",
-				"PNG decoder failure", wxOK, frame);
+				_(L"PNG decode failed on some images in this document\nThey have been replaced by "
+				  L"red squares."),
+				_("PNG decoder failure"), wxOK, frame);
 
 		return "";
 	}
@@ -277,7 +277,7 @@ namespace treesheets {
 			if (msg && *msg) wxMessageBox(wxString::FromAscii(msg), fn.wx_str(), wxOK, frame);
 			return msg;
 		}
-		return "open file cancelled";
+		return _("open file cancelled");
 	}
 
 	void System::RememberOpenFiles() {
@@ -362,8 +362,8 @@ namespace treesheets {
 		}
 		return NULL;
 	problem:
-		wxMessageBox(L"couldn't import file!", fn, wxOK, frame);
-		return "file load error";
+		wxMessageBox(_(L"couldn't import file!"), fn, wxOK, frame);
+		return _("file load error");
 	}
 
 	int System::GetXMLNodes(wxXmlNode *n, Vector<wxXmlNode *> &ns, Vector<wxXmlAttribute *> *ps, bool attributestoo) {
