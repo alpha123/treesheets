@@ -79,22 +79,24 @@ private:
 public:
   explicit codepoint(uint32_t ch) : cp(ch) {}
   explicit operator uint32_t() { return cp; }
-  inline friend bool operator==(codepoint a, codepoint w) { return a.cp == w.cp; }
-  inline friend bool operator!=(codepoint a, codepoint w) { return a.cp != w.cp; }
-  inline friend bool operator<(codepoint a, codepoint w) { return a.cp < w.cp; }
-  inline friend bool operator>(codepoint a, codepoint w) { return a.cp > w.cp; }
-  inline friend bool operator<=(codepoint a, codepoint w) { return a.cp <= w.cp; }
-  inline friend bool operator>=(codepoint a, codepoint w) { return a.cp >= w.cp; }
+  codepoint &operator=(uint32_t ch) { cp = ch; return *this; }
 
-  inline codepoint &operator+=(uint32_t a) { cp += a; return *this; }
-  inline codepoint &operator-=(uint32_t a) { cp -= a; return *this; }
-  inline friend codepoint operator+(codepoint a, uint32_t w) { return a += w; }
-  inline friend codepoint operator+(uint32_t a, codepoint w) { return w += a; }
-  inline friend codepoint operator-(codepoint a, uint32_t w) { return a -= w; }
-  inline codepoint &operator++() { ++cp; return *this; }
-  inline codepoint operator++(int) { codepoint x(*this); ++cp; return x; }
-  inline codepoint &operator--() { --cp; return *this; }
-  inline codepoint operator--(int) { codepoint x(*this); --cp; return x; }
+  friend bool operator==(codepoint a, codepoint w) { return a.cp == w.cp; }
+  friend bool operator!=(codepoint a, codepoint w) { return a.cp != w.cp; }
+  friend bool operator<(codepoint a, codepoint w) { return a.cp < w.cp; }
+  friend bool operator>(codepoint a, codepoint w) { return a.cp > w.cp; }
+  friend bool operator<=(codepoint a, codepoint w) { return a.cp <= w.cp; }
+  friend bool operator>=(codepoint a, codepoint w) { return a.cp >= w.cp; }
+
+  codepoint &operator+=(uint32_t a) { cp += a; return *this; }
+  codepoint &operator-=(uint32_t a) { cp -= a; return *this; }
+  friend codepoint operator+(codepoint a, uint32_t w) { return a += w; }
+  friend codepoint operator+(uint32_t a, codepoint w) { return w += a; }
+  friend codepoint operator-(codepoint a, uint32_t w) { return a -= w; }
+  codepoint &operator++() { ++cp; return *this; }
+  codepoint operator++(int) { codepoint x(*this); ++cp; return x; }
+  codepoint &operator--() { --cp; return *this; }
+  codepoint operator--(int) { codepoint x(*this); --cp; return x; }
 };
 
 template<typename OutputIter>
@@ -123,28 +125,75 @@ OutputIter utf8_encode(codepoint cp, OutputIter dest)
 template<typename InputIter>
 class utf8_codepoints_view {
 private:
-  InputIter it, last;
+  InputIter first, last;
 
   class iterator_base<bool is_const> : std::iterator<
     std::input_iterator_tag,
     std::conditional<is_const, const codepoint, codepoint>::type
   > {
   private:
-    typedef typename std::conditional<is_const, const utf8_codepoints_view &, utf8_codepoints_view &>::type view_ref;
-    view_ref v;
+    typedef typename std::conditional<is_const, const InputIter, InputIter>::type wrapped_iter;
+    wrapped_iter it;
+    codepoint cp;
   public:
-    iterator_base(view_ref view) : v(view) {}
+    iterator_base(wrapped_iter pos) : it(pos) {}
     iterator_base(const iterator_base<false> &a) : v(a.v) {}
 
-    iterator_base &operator++() {}
+    iterator_base &operator++()
+    {
+// is valid in a multibyte utf-8 sequence
+#define valid_cont(c) (((c) & 0xC0) == 0x80)
+#define assert_valid(ex) if (!(ex)) return UTF8_INVALID_UTF8
+  uint32_t c = *it; ++it;
+  if (c < 0x80)
+  {
+    cp = c;
+  }
+  assert_valid(cp - 0xC2 <= 0x32);
+  switch ((cp < 0xE0) + (cp < 0xF0))
+  {
+  case 2: // 2-byte sequence
+    assert_valid(str < end && valid_cont(str[0]));
+    *out_cp = ((cp & 0x1F) << 6) | (str[0] & 0x3F);
+    return 2;
+  case 1: // 3-byte sequence
+    assert_valid(str + 1 < end && valid_cont(str[0]) && valid_cont(str[1]));
+    assert_valid(cp != 0xED || str[0] <= 0x9F);
+    cp = ((cp & 0xF) << 12) | ((str[0] & 0x3F) << 6) | (str[1] & 0x3F);
+    assert_valid(cp >= 0x800);
+    *out_cp = cp;
+    return 3;
+  default: // 4-byte sequence
+    assert_valid(   str + 2 < end && valid_cont(str[0])
+                 && valid_cont(str[1]) && valid_cont(str[2]));
+    assert_valid(!(cp == 0xF0 && str[0] < 0x90) && !(cp == 0xF4 && str[0] > 0x8F));
+    *out_cp = ((cp & 7) << 18) | ((str[0] & 0x3F) << 12)
+            | ((str[1] & 0x3F) << 6) | (str[2] & 0x3F);
+    return 4;
+  }
+}
+#undef assert_valid
+#undef valid_cont
+    }
     iterator_base operator++(int) { iterator_base x(*this); operator++(); return x; }
 
     friend bool operator==(const iterator_base &a, const iterator_base &w);
+    friend bool operator!=(const iterator_base &a, const iterator_base &w) { return !(a == w); }
   }
 public:
-  utf8_codepoints_view(InputIter first_, InputIter last_) : it(first_), last(last_) {}
+  utf8_codepoints_view(InputIter first_, InputIter last_) : first(first_), last(last_) {}
   template<typename Range>
-  utf8_codepoints_view(Range r) : it(std::begin(r)), last(std::end(r)) {}
+  utf8_codepoints_view(Range r) : first(std::begin(r)), last(std::end(r)) {}
+
+  typedef iterator_base<false> iterator;
+  typedef iterator_base<true> const_iterator;
+
+  iterator begin() { return iterator(first); }
+  iterator end() { return iterator(last); }
+  const_iterator cbegin() const { return const_iterator(first); }
+  const_iterator cend() const { return const_iterator(last); }
+  const_iterator begin() const { return cbegin(); }
+  const_iterator end() const { return cend(); }
 };
 
 ssz utf8_iterate_cp(usz, const u8 * restrict, unicp OUT);
@@ -163,7 +212,7 @@ unicp uniupcase(unicp);
 unicp unidowncase(unicp);
 unicp unititlecase(unicp);
 
-CATEGORYegory unigetcategory(unicp);
+unicategory unigetcategory(unicp);
 unibidi_class unigetbidi_class(unicp);
 unibound_class unigetbound_class(unicp);
 unidecomp_type unigetdecomp_type(unicp);
