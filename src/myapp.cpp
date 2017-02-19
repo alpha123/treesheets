@@ -10,17 +10,13 @@ namespace treesheets {
 #endif
 		ASSERT(wxUSE_UNICODE);
 
-		//#ifdef __WXMAC__
 		// Now needed on WIN32 as well, because of all the locale related asserts. sigh.
 		wxDisableAsserts();
-		//#endif
 
-		// locale.Init();
-		//// wxWidgets forces the use of LC_ALL, and doesn't allow use of setlocale without a
-		///wxLocale
-		//// so to get what we want, we reset back to C locale first.
-		// std::setlocale(LC_ALL, "C");
 		std::setlocale(LC_CTYPE, "");  // correct handling of non-latin symbols
+
+		locale.AddCatalog(L"treesheets");
+		locale.Init();
 
 		bool portable = false;
 		for (int i = 1; i < argc; i++) {

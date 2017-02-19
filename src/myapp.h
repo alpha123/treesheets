@@ -8,10 +8,10 @@ namespace treesheets {
 	struct MyApp : wxApp {
 		MyFrame *frame;
 		wxString filename;
+		wxLocale locale;
 		bool initateventloop;
-		// wxLocale locale;
 
-		MyApp() : frame(NULL), initateventloop(false) {}
+		MyApp() : frame(NULL), locale(wxLANGUAGE_DEFAULT), initateventloop(false) {}
 		bool OnInit();
 
 		void OnEventLoopEnter(wxEventLoopBase* WXUNUSED(loop));
