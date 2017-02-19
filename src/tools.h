@@ -210,33 +210,6 @@ class Vector : public NonCopyable {
     void append(Vector<T> &o) { loopv(i, o) push() = o[i]; }
 };
 
-class MTRnd {
-    const static uint N = 624;
-    const static uint M = 397;
-    const static uint K = 0x9908B0DFU;
-
-    inline uint hiBit(uint u) { return u & 0x80000000U; }
-    inline uint loBit(uint u) { return u & 0x00000001U; }
-    inline uint loBits(uint u) { return u & 0x7FFFFFFFU; }
-
-    inline uint mixBits(uint u, uint v) { return hiBit(u) | loBits(v); }
-
-    uint state[N + 1];
-    uint *next;
-    int left;
-
-public:
-    MTRnd() : left(-1) {}
-
-	void SeedMT(uint seed);
-
-	uint ReloadMT();
-
-	uint RandomMT();
-
-    inline int operator()(int max) { return RandomMT() % max; }
-};
-
 // for use with vc++ crtdbg
 
 //#ifdef _DEBUG
