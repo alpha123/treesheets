@@ -1,3 +1,4 @@
+#include <wx/url.h>
 #include "text.h"
 #include "cell.h"
 #include "system.h"
@@ -76,7 +77,24 @@ namespace treesheets {
 
 	wxString Text::ToText(int indent, const Selection &s, int format) {
 		wxString str = s.cursor != s.cursorend ? t.Mid(s.cursor, s.cursorend - s.cursor) : t;
-		if (format == A_EXPXML || format == A_EXPHTMLT || format == A_EXPHTMLO) str = htmlify(str);
+		if (format == A_EXPHTMLT || format == A_EXPHTMLO)
+		{
+			wxURLError err = wxURL(str).GetError();
+			// https and gopher URLs result in wxURL_NOPROTO for some reason.
+			// Can't seem to find something in setup.h to fix that.
+			// The Contains check is needed so that strings like FMA:B don't get
+			// mistaken for a URL.
+			if (err == wxURL_NOERR || (err == wxURL_NOPROTO && str.Contains(L"://")))
+			{
+				wxString link = L"<a href=\"";
+				link += str;
+				link += L"\">";
+				link += htmlify(str);
+				link += L"</a>";
+				str = link;
+			}
+		}
+		else if (format == A_EXPXML) str = htmlify(str);
 		return str;
 	};
 
